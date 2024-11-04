@@ -23,6 +23,19 @@ function prompt(questionText, callback) {
             expenses.push({ name, cost });
             console.log('\nSuccessfully added the expense!');
             displayMain();
+        } else if (input.includes(':main')) {
+            displayMain();
+        } else if (input.includes(':quit')) {
+            prompt(
+                `\nAre you sure you want to quit? You will lose unsaved progress. (y/n)\nInput: `,
+                (input) => {
+                    if (input === 'y' || input === 'yes') {
+                        process.exit(0);
+                    } else {
+                        displayMain();
+                    }
+                }
+            );
         } else {
             callback(input);
         }
@@ -75,6 +88,7 @@ function displayHelp() {
     console.log(
         'These are shortcut commands that can be typed at any time to help you.\n'
     );
+    console.log(':main to view main page.');
     console.log(':add name,amount to quickly add an expense.');
     console.log(':quit to exit the application.\n');
 
