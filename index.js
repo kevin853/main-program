@@ -2,8 +2,8 @@ const readline = require('readline');
 
 /**
  * {
- * name
- * cost
+ * name: str (name of expense)
+ * cost: str (cost of expense)
  * }
  */
 const expenses = [];
@@ -117,16 +117,25 @@ function displayViewExpenses() {
 
 function displayAddExpense() {
     console.log(`\n--- Add Expense ---`);
+    console.log('There are 2 steps to add an expense.')
+    console.log('Type :back if you want to go back to previous step.');
     const expense = {};
-    prompt('Enter expense name: ', (input) => {
-        expense.name = input;
-        prompt('Enter expense cost: ', (input) => {
-            expense.cost = input;
-            expenses.push(expense);
-            console.log('\nExpense successfully added!');
-            displayMain();
+    function step1() {
+        prompt('Step 1 Enter expense name: ', (input) => {
+            expense.name = input;
+            prompt('Step 2 Enter expense cost: ', (input) => {
+                if (input === ':back') {
+                    step1();
+                } else {
+                    expense.cost = input;
+                    expenses.push(expense);
+                    console.log('\nExpense successfully added!');
+                    displayMain();
+                }
+            });
         });
-    });
+    }
+    step1();
 }
 
 function displayDeleteExpense() {
