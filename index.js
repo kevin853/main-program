@@ -7,7 +7,17 @@ const rl = readline.createInterface({
     output: process.stdout,
 });
 
-function displayMain() {
+function prompt(questionText, callback) {
+    rl.question(questionText, (input) => {
+        if (input === '--help') {
+            displayHelp();
+        } else {
+            callback(input);
+        }
+    });
+}
+
+function displayHome() {
     console.clear();
     console.log('Welcome to the MyFinance CLI App!\n');
     console.log(
@@ -17,10 +27,24 @@ function displayMain() {
         'Note: Data is stored temporarily and will be lost when the app is closed.'
     );
     console.log('Type "--help" at any time to view more information.\n');
+    console.log('Input 1 to view Main Menu.\n');
 
-    rl.question('Input: ', (input) => {
-        if (input === '--help') {
-            displayHelp();
+    prompt('Input: ', (input) => {
+        if (input === '1') {
+            displayMain();
+        }
+    });
+}
+
+function displayMain() {
+    console.log(`\n--- Main Menu ---\nEnter any of the following inputs:`);
+    console.log(`1. View Expense`);
+    console.log(`2. Add Expense`);
+    console.log(`3. Delete Expense`);
+
+    prompt('Input: ', (input) => {
+        if (input === '2') {
+            displayAddExpense();
         }
     });
 }
@@ -35,16 +59,28 @@ function displayHelp() {
     console.log(':add name,amount,type to quickly add an expense.');
     console.log(':quit to exit the application.\n');
 
-    rl.question('Input: ', (input) => {
+    prompt('Input: ', (input) => {
         if (input === '1') {
             displayMain();
         }
     });
 }
 
-function addExpense() {
-    console.log(`--- Add Expense ---`);
-    rl.question('Enter expense name: ', (input) => {});
+function displayAddExpense() {
+    console.log(`\n--- Add Expense ---`);
+    const expense = {};
+    prompt('Enter expense name: ', (input) => {
+        expense.name = input;
+        prompt('Enter expense cost: ', (input) => {
+            expense.cost = input;
+            prompt('Enter expense type: ', (input) => {
+                expense.type = input;
+                expenses.push(expense);
+                console.log('Expense successfully added!');
+                displayMain();
+            });
+        });
+    });
 }
 
-displayMain();
+displayHome();
