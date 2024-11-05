@@ -117,7 +117,7 @@ function displayViewExpenses() {
 
 function displayAddExpense() {
     console.log(`\n--- Add Expense ---`);
-    console.log('There are 2 steps to add an expense.')
+    console.log('There are 2 steps to add an expense.');
     console.log('Type :back if you want to go back to previous step.');
     const expense = {};
     function step1() {
@@ -142,6 +142,7 @@ function displayDeleteExpense() {
     console.log(`\n--- Delete Expense ---`);
     if (expenses.length === 0) {
         console.log('You have no expenses to delete.');
+        displayMain();
     } else {
         prompt('Enter the Id of the expense you want to delete: ', (input) => {
             let indexToDelete = input;
