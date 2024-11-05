@@ -25,6 +25,8 @@ function prompt(questionText, callback) {
             displayMain();
         } else if (input.includes(':main')) {
             displayMain();
+        } else if (input.includes(':home')) {
+            displayHome();
         } else if (input.includes(':quit')) {
             prompt(
                 `\nAre you sure you want to quit? You will lose unsaved progress. (y/n)\nInput: `,
@@ -88,6 +90,7 @@ function displayHelp() {
     console.log(
         'These are shortcut commands that can be typed at any time to help you.\n'
     );
+    console.log(':home to view home page.');
     console.log(':main to view main page.');
     console.log(':add name,amount to quickly add an expense.');
     console.log(':quit to exit the application.\n');
