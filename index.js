@@ -1,12 +1,5 @@
 const readline = require('readline');
-
-/**
- * {
- * name: str (name of expense)
- * cost: str (cost of expense)
- * }
- */
-const expenses = [];
+const axios = require('axios');
 
 const rl = readline.createInterface({
     input: process.stdin,
@@ -14,14 +7,19 @@ const rl = readline.createInterface({
 });
 
 function prompt(questionText, callback) {
-    rl.question(questionText, (input) => {
+    rl.question(questionText, async (input) => {
         if (input === '--help') {
             displayHelp();
         } else if (input.includes(':add')) {
             const [_, formattedAddStr] = input.split(' ');
-            const [name, cost] = formattedAddStr.split(',');
-            expenses.push({ name, cost });
-            console.log('\nSuccessfully added the expense!');
+            const [category, name, cost] = formattedAddStr.split(',');
+            const expense = { category, name, cost };
+            try {
+                await axios.post('http://localhost:3001/expenses', expense);
+                console.log('\nExpense successfully added!');
+            } catch (error) {
+                console.error('Error adding expense', error);
+            }
             displayMain();
         } else if (input.includes(':main')) {
             displayMain();
@@ -92,7 +90,7 @@ function displayHelp() {
     );
     console.log(':home to view home page.');
     console.log(':main to view main page.');
-    console.log(':add name,amount to quickly add an expense.');
+    console.log(':add category,name,cost to quickly add an expense.');
     console.log(':quit to exit the application.\n');
 
     prompt('Input: ', (input) => {
@@ -102,39 +100,54 @@ function displayHelp() {
     });
 }
 
-function displayViewExpenses() {
+async function displayViewExpenses() {
     console.log(`\n--- View Expenses---`);
-    if (expenses.length === 0) {
-        console.log('You have no expenses.');
-    } else {
-        console.log('Your Expenses: ');
-        for (let i = 0; i < expenses.length; i++) {
-            const expense = expenses[i];
-            console.log(
-                `Id: ${i}, Name: ${expense.name}, Cost: $${expense.cost}`
+    try {
+        const { data: expenses } = await axios.get(
+            'http://localhost:3001/expenses'
+        );
+        if (expenses.length === 0) {
+            console.log('You have no expenses.');
+        } else {
+            console.log('Your Expenses: ');
+            console.table(
+                expenses.map((expense) => ({
+                    Id: expense.id,
+                    Name: expense.name,
+                    Cost: `$${expense.cost}`,
+                    Category: expense.category,
+                }))
             );
         }
+        displayMain();
+    } catch (error) {
+        console.error('Error getting expenses', error);
     }
-    displayMain();
 }
 
 function displayAddExpense() {
     console.log(`\n--- Add Expense ---`);
-    console.log('There are 2 steps to add an expense.');
-    console.log('Type :back if you want to go back to previous step.');
+    console.log('There are 3 steps to add an expense.');
     const expense = {};
     function step1() {
-        prompt('Step 1 Enter expense name: ', (input) => {
-            expense.name = input;
-            prompt('Step 2 Enter expense cost: ', (input) => {
-                if (input === ':back') {
-                    step1();
-                } else {
+        prompt('Step 1 Enter expense category: ', (input) => {
+            expense.category = input;
+            prompt('Step 2 Enter expense name: ', (input) => {
+                expense.name = input;
+                prompt('Step 3 Enter expense cost: ', async (input) => {
                     expense.cost = input;
-                    expenses.push(expense);
-                    console.log('\nExpense successfully added!');
-                    displayMain();
-                }
+                    try {
+                        await axios.post(
+                            'http://localhost:3001/expenses',
+                            expense
+                        );
+                        console.log('\nExpense successfully added!');
+                        displayMain();
+                    } catch (error) {
+                        console.error('Error adding expense', error);
+                        displayMain();
+                    }
+                });
             });
         });
     }
@@ -143,29 +156,28 @@ function displayAddExpense() {
 
 function displayDeleteExpense() {
     console.log(`\n--- Delete Expense ---`);
-    if (expenses.length === 0) {
-        console.log('You have no expenses to delete.');
-        displayMain();
-    } else {
-        prompt('Enter the Id of the expense you want to delete: ', (input) => {
-            let indexToDelete = input;
-            prompt(
-                `Please confirm you want to delete ${expenses[input].name} expense. (y/n): `,
-                (input) => {
-                    if (input === 'y' || input === 'yes') {
-                        expenses.splice(indexToDelete, 1);
-                        console.log('\nExpense deleted successfully!');
-                        displayMain();
-                    } else {
-                        console.log(
-                            'You did not confirm to delete the expense.'
+    prompt('Enter the Id of the expense you want to delete: ', (input) => {
+        let idToDelete = input;
+        prompt(
+            `Please confirm you want to delete expense Id: ${idToDelete}. (y/n): `,
+            async (input) => {
+                if (input === 'y' || input === 'yes') {
+                    try {
+                        await axios.delete(
+                            `http://localhost:3001/expenses/${idToDelete}`
                         );
-                        displayMain();
+                        console.log('\nExpense deleted successfully!');
+                    } catch (error) {
+                        console.error('Error deleting expense', error);
                     }
+                    displayMain();
+                } else {
+                    console.log('You did not confirm to delete the expense.');
+                    displayMain();
                 }
-            );
-        });
-    }
+            }
+        );
+    });
 }
 
 displayHome();
